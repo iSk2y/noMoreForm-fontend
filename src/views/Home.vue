@@ -1,6 +1,7 @@
 <template>
   <div>
-    <fheader></fheader>
+    <my-header></my-header>
+    <router-view></router-view>
     <!-- <ffooter></ffooter> -->
   </div>
   
@@ -8,13 +9,13 @@
 
 <script>
 // @ is an alias to /src
-import fheader from "@/components/Header";
-import ffooter from "@/components/Footer";
+import MyHeader from "@/components/MyHeader";
+import MyFooter from "@/components/MyFooter";
 export default {
   name: "home",
   components:{
-    fheader,
-    ffooter
+    MyHeader,
+    MyFooter
   }
   
 };

@@ -1,18 +1,18 @@
 <template>
   <div class="header">
-      <Menu mode="horizontal" :theme="'light'" active-name="1">
+      <Menu mode="horizontal" :theme="'light'" :active-name="activeKey">
         <div class="header-logo">
             <span>NoMoreForm</span>
         </div>
         <div class="header-nav">
-          <MenuItem name="1">
+          <MenuItem name="Home" :to="{name:'Home'}">
             <Icon type="ios-home"/>主页
           </MenuItem>
-          <MenuItem name="2">
+          <MenuItem name="CreateForm" :to="{name:'CreateForm'}">
             <Icon type="ios-bulb"/>创建表单
           </MenuItem>
          <MenuItem name="3" v-if="loginStatus!==true">
-            <Button type="primary" ghost>登陆</Button>
+            <Button type="primary" ghost>登录</Button>
           </MenuItem> 
           <Submenu name="3"  v-else>
             <template slot="title">
@@ -30,11 +30,16 @@
 </template>
 <script>
 export default {
-  name: "fheader",
+  name: "MyHeader",
   data() {
     return {
-        loginStatus:false
+        loginStatus:false,
+        activeKey: ""
     };
+  },
+  mounted(){
+    // 导航菜单 active项 和路由名字对应
+    this.activeKey = this.$route.name;
   }
 };
 </script>
@@ -55,6 +60,7 @@ export default {
   top: 15px;
   left: 20px;
   line-height: 30px;
+  text-align: center;
 }
 
 .header-logo > span{
