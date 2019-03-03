@@ -66,6 +66,7 @@ export default {
 .header-logo > span{
   color: #ffffff;
   font-weight: bolder;
+    cursor: pointer;
 }
 
 .header-nav{

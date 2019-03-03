@@ -12,6 +12,7 @@ Vue.config.productionTip = false;
 Vue.use(iView);
 Vue.use(custom_form);
 Vue.prototype.$http = axios;
+axios.defaults.baseURL = "https://vue-jsondata.firebaseio.com/";
 
 new Vue({
   router,

@@ -79,8 +79,7 @@
               <Option
                 :disabled="dataDictSelected.indexOf(item.id) >= 0"
                 v-for="item in dataDictList"
-                :value="JSON.stringify({
-                id: item.id, parent_name: item.parent_name})"
+                :value="JSON.stringify(item)"
                 :key="item.id"
               >{{ item.label }}</Option>
             </Select>
@@ -224,6 +223,7 @@
               </Row>
             </FormItem>
           </template>
+
         </Form>
         <div slot="footer">
           <Button type="text" @click="handleCancel">取消</Button>
@@ -261,12 +261,16 @@ export default {
       localStorage.setItem(
         "template_form",
         JSON.stringify(
-          this.sortable_item.filter(v => {
-            return !!v.obj.name;
-          })
+          this.sortable_item
         )
+        
       );
-      this.$router.push("/render");
+      // this.$router.push("/render");
+      this.$http.post('/form/formObj.json',{
+        "template_form":this.sortable_item
+      }).then((response)=>{
+        console.log(response);
+      })
     },
     // 清空克隆表单
     handleReset() {
@@ -278,14 +282,16 @@ export default {
       const obj = JSON.parse(val);
       // 数据加载中，禁止modal_submit提交按钮
       this.$set(this.modalFormData, "loading", true);
-      this.$http.get(`/static/label.${obj.id}.json`).then(d => {
-        this.modalFormData = Object.assign({}, this.modalFormData, {
-          name: d.data.name,
+      // 只有radio CheckBox select 是有items的
+      if(['radio','checkbox','select'].indexOf(this.modalFormData.type.toLowerCase()) >= 0){
+        
+        this.$set(this.modalFormData, "items", obj.items);
+      }
+      this.modalFormData = Object.assign({}, this.modalFormData, {
+          name: obj.name || this.modalFormData.type+this.modalFormData.listIndex,
           loading: false,
-          items: d.data.items,
-          parent_name: obj.parent_name
+          parent_name: null
         });
-      });
     },
     // 控件回填数据
     handleChangeVal(val, element) {
@@ -341,6 +347,8 @@ export default {
       }
       // 配置项中未找到color，删除modalFormData中自带color属性
       if (!list_temp.obj["color"]) delete this.modalFormData.color;
+      // 如果控件没有选择数据字典 即没有dict属性，name为空时，给name赋值（第一次打开都会被赋值）
+      if (!list_temp.obj['dict']) this.modalFormData.name = list_temp.obj.type + index;
       // 设置被配置控件的index，便于完成配置找到相应对象赋值
       this.modalFormData.listIndex = index;
       // Vue 不能检测到对象属性的添加或删除
@@ -387,9 +395,8 @@ export default {
     },
     // 对应控件的数据字典
     dataDictList() {
-      return this.dataDict.filter(v => {
-        return v.type == this.modalFormData.type;
-      });
+      return this.dataDict[this.modalFormData.type];
+      
     },
     // 拖拽表单1
     dragOptions1() {
@@ -440,11 +447,11 @@ export default {
     }
   },
   created() {
-    // /static/label.json
-    // this.$http.get('/static/label.json').then(d => {
-    //   this.dataDict = d.data.items;
-    // });
-    // this.sortable_item = JSON.parse(localStorage.getItem('template_form') || '[]');
+    // 获取远程firebase上的 数据字典
+    this.$http.get('/form/dataDictOptions.json').then(d => {
+      this.dataDict = d.data;
+    });
+    this.sortable_item = JSON.parse(localStorage.getItem('template_form') || '[]');
   }
 };
 </script>
