@@ -77,7 +77,7 @@
             <Select v-model="modalFormData.dict" filterable @on-change="handleDataDictChange">
               <!-- value绑定json字符串的原因是，需要用到parent_name，当handleDataDictChange触发，赋值到modalFormData -->
               <Option
-                :disabled="dataDictSelected.indexOf(item.id) >= 0"
+                :disabled="dataDictSelected[item.type].indexOf(item.id) >= 0"
                 v-for="item in dataDictList"
                 :value="JSON.stringify(item)"
                 :key="item.id"
@@ -127,7 +127,7 @@
           <FormItem label="提示内容：" v-if="typeof modalFormData.placeholder != 'undefined'">
             <i-input v-model="modalFormData.placeholder" placeholder="请输入提示占位符"></i-input>
           </FormItem>
-          
+
           <FormItem label="最大长度：" v-if="typeof modalFormData.maxLength != 'undefined'">
             <InputNumber v-model="modalFormData.maxLength" placeholder="请输入文本限制最大长度"></InputNumber>
           </FormItem>
@@ -193,7 +193,7 @@
               <Radio label="left">左对齐</Radio>
               <Radio label="center">居中</Radio>
               <Radio label="right">右对齐</Radio>
-          </RadioGroup>
+            </RadioGroup>
           </FormItem>
 
           <!-- 给CheckBox radio select 三个控件 自由填写选项内容 -->
@@ -223,7 +223,6 @@
               </Row>
             </FormItem>
           </template>
-
         </Form>
         <div slot="footer">
           <Button type="text" @click="handleCancel">取消</Button>
@@ -280,6 +279,7 @@ export default {
     handleDataDictChange(val) {
       // 选中后，val默认赋值到modalFormData.dict
       const obj = JSON.parse(val);
+      console.log(obj);
       // 数据加载中，禁止modal_submit提交按钮
       this.$set(this.modalFormData, "loading", true);
       // 只有radio CheckBox select 是有items的
@@ -354,6 +354,7 @@ export default {
       // Vue 不能检测到对象属性的添加或删除
       this.modalFormData = Object.assign({}, this.modalFormData);
       this.showModal = true;
+      console.log(this.dataDictSelected);
     },
     // 删除克隆控件
     removeEle(index) {
@@ -388,15 +389,21 @@ export default {
   computed: {
     // 数据字典已选择项
     dataDictSelected() {
-      return this.sortable_item.map(v => {
+      // 遍历 被拖拽控件的每个对象 解析dict字典 返回选中字典dict中的项id
+
+      // 已选择的数据字典对象，将各类型分开
+      let dataDictSelectedObj = {};
+      this.sortable_item.map(v => {
         const obj = JSON.parse(v.obj.dict || "{}");
-        return obj.id || -1;
+        // 如果对象属性未创建，就先初始化[]
+        if((typeof dataDictSelectedObj[v.obj.type])==="undefined") {dataDictSelectedObj[v.obj.type]=[]}
+        dataDictSelectedObj[v.obj.type].push(obj.id || -1);
       });
+      return dataDictSelectedObj;
     },
     // 对应控件的数据字典
     dataDictList() {
       return this.dataDict[this.modalFormData.type];
-      
     },
     // 拖拽表单1
     dragOptions1() {
